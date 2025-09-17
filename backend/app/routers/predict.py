@@ -10,8 +10,8 @@ from jose import jwt, JWTError
 
 router = APIRouter()
 
-# ---------------- Model Path ----------------
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "../../plant_diesease_cnn_model.keras")
+# ---------------- Model Path ---------------
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "../../plant_disease_cnn_model.keras")
 model = tf.keras.models.load_model(MODEL_PATH)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "../uploads")
