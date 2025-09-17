@@ -1,0 +1,8 @@
+# Ignore ML models
+*.keras
+*.h5
+*.pkl
+*.pt
+*.onnx
+
+backend/plant_diesease_cnn_model.keras
