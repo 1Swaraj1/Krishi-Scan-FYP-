@@ -1,10 +1,9 @@
 from fastapi import FastAPI
-from app import database
-from app.models import user_model, prediction_model, chat_model
+from app.database import engine, Base
 from app.routers import auth, predict, chat
 
-# Create DB tables
-database.Base.metadata.create_all(bind=database.engine)
+# Create DB tables from models
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Krishi-Scan API")
 

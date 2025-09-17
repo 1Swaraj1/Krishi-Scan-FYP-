@@ -1,18 +1,13 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from .models import Base
 
-DATABASE_URL = "mysql+mysqlconnector://root:password@localhost:3306/krishi_scan"
+# Replace with your MySQL credentials
+DATABASE_URL = "mysql+mysqlconnector://root:password@localhost/krishiscan"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = declarative_base()
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# Call this once to create tables in DB
+def init_db():
+    Base.metadata.create_all(bind=engine)
