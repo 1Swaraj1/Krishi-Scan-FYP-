@@ -6,6 +6,8 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 DATABASE_URL = "mysql+mysqlconnector://root:swaraj@localhost/krishiscan"
 
 engine = create_engine(DATABASE_URL)
+with engine.connect() as conn:
+    print("Connected!")
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
