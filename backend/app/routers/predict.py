@@ -2,26 +2,36 @@ from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models.models import User, Disease, Prediction, Log
+from jose import jwt, JWTError
 import tensorflow as tf
+import numpy as np
 import os
 import shutil
 from datetime import datetime
-from jose import jwt, JWTError
 
-router = APIRouter()
+# ---------------- Router ----------------
+router = APIRouter(prefix="/predict", tags=["Prediction"])
 
-# ---------------- Model Path ---------------
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "../../plant_disease_cnn_model.keras")
-model = tf.keras.models.load_model(MODEL_PATH)
+# ---------------- Model Path ----------------
+# Go back two levels from app/routers/ to reach project root where model is stored
+MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../plant_disease_cnn_model.keras"))
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "../uploads")
+try:
+    model = tf.keras.models.load_model(MODEL_PATH)
+    print(f" Model loaded successfully from: {MODEL_PATH}")
+except Exception as e:
+    print(f" Error loading model from {MODEL_PATH}: {e}")
+    model = None  # fallback to prevent server crash
+
+# ---------------- Upload Folder ----------------
+UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), "../uploads"))
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ---------------- JWT Settings ----------------
-SECRET_KEY = "your_secret_key_here"  # same as in auth.py
+# ---------------- JWT Config ----------------
+SECRET_KEY = "your_secret_key_here"  # must match auth.py
 ALGORITHM = "HS256"
 
-# ---------------- Dependencies ----------------
+# ---------------- DB Dependency ----------------
 def get_db():
     db = SessionLocal()
     try:
@@ -37,6 +47,9 @@ def log_action(db, user_id, action, details=None):
 
 # ---------------- JWT Auth Dependency ----------------
 def get_current_user(authorization: str = Header(...), db: Session = Depends(get_db)):
+    """
+    Decode JWT and return the current user.
+    """
     try:
         token = authorization.split(" ")[1]  # Expecting "Bearer <token>"
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -47,12 +60,22 @@ def get_current_user(authorization: str = Header(...), db: Session = Depends(get
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
         return user
-    except JWTError:
+    except (JWTError, IndexError):
         raise HTTPException(status_code=401, detail="Invalid token")
 
 # ---------------- Prediction API ----------------
-@router.post("/predict")
-async def predict(file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+@router.post("/", summary="Predict plant disease from uploaded image")
+async def predict(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload a leaf image, predict disease, and return description + treatment.
+    """
+    if model is None:
+        raise HTTPException(status_code=500, detail="Model not loaded on server")
+
     user_id = current_user.user_id
 
     # Save uploaded file
@@ -64,25 +87,28 @@ async def predict(file: UploadFile = File(...), current_user: User = Depends(get
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # Preprocess image for model
-    img = tf.keras.preprocessing.image.load_img(file_path, target_size=(128, 128))  # adjust size
-    img_array = tf.keras.preprocessing.image.img_to_array(img)
-    img_array = tf.expand_dims(img_array, 0)
+    # Preprocess image
+    try:
+        img = tf.keras.preprocessing.image.load_img(file_path, target_size=(256,256 ))
+        img_array = tf.keras.preprocessing.image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0) / 255.0
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Image processing failed: {e}")
 
     # Predict
     predictions = model.predict(img_array)
-    predicted_index = tf.argmax(predictions[0]).numpy()
-    confidence_score = float(tf.reduce_max(predictions[0]))
+    predicted_index = int(np.argmax(predictions[0]))
+    confidence_score = float(np.max(predictions[0]))
 
-    # Map index to label (replace with your actual class labels)
+    # Replace with your actual labels
     class_labels = ["Early Blight", "Late Blight", "Healthy"]
     predicted_label = class_labels[predicted_index]
 
-    # Lookup disease_id
+    # Get disease details from DB
     disease = db.query(Disease).filter(Disease.disease_name == predicted_label).first()
     disease_id = disease.disease_id if disease else None
 
-    # Save prediction to DB
+    # Save prediction in DB
     new_pred = Prediction(
         user_id=user_id,
         disease_id=disease_id,
@@ -97,12 +123,11 @@ async def predict(file: UploadFile = File(...), current_user: User = Depends(get
     # Log prediction
     log_action(db, user_id, "Prediction made", details=f"Prediction ID: {new_pred.prediction_id}")
 
-    # Return response
-    response = {
+    # Build response
+    return {
         "prediction_id": new_pred.prediction_id,
         "predicted_label": predicted_label,
         "confidence_score": confidence_score,
-        "disease_description": disease.description if disease else "",
-        "disease_treatment": disease.treatment if disease else ""
+        "disease_description": disease.description if disease else "Description not found.",
+        "disease_treatment": disease.treatment if disease else "Treatment not available."
     }
-    return response

@@ -1,16 +1,31 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+from jose import jwt, JWTError
 from app.database import SessionLocal
 from app.models.models import User, Log
-from jose import jwt, JWTError
+from pydantic import BaseModel
 
 router = APIRouter()
 
-SECRET_KEY = "your_secret_key_here"  # same as auth.py
+# ---------------- Constants ----------------
+SECRET_KEY = "your_secret_key_here"  # must match the one in auth.py
 ALGORITHM = "HS256"
 
-# ---------------- DB Dependency ----------------
+
+# ---------------- Pydantic Response Model ----------------
+class LogResponse(BaseModel):
+    log_id: int
+    user_id: int
+    action: str
+    details: Optional[str] = None
+    timestamp: str
+
+    class Config:
+        orm_mode = True
+
+
+# ---------------- Database Dependency ----------------
 def get_db():
     db = SessionLocal()
     try:
@@ -18,32 +33,42 @@ def get_db():
     finally:
         db.close()
 
+
 # ---------------- JWT Auth & Admin Check ----------------
 def get_current_admin(authorization: str = Header(...), db: Session = Depends(get_db)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authorization header missing or invalid")
+
+    token = authorization.split(" ")[1]
+
     try:
-        token = authorization.split(" ")[1]  # Bearer <token>
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
         if not user_id:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        user = db.query(User).filter(User.user_id == user_id).first()
-        if not user or user.role != 'admin':
-            raise HTTPException(status_code=403, detail="Admin access required")
-        return user
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user or user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+
+    return user
+
 
 # ---------------- Get All Logs ----------------
-@router.get("/logs", response_model=List[dict])
-def get_logs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), admin: User = Depends(get_current_admin)):
-    logs = db.query(Log).order_by(Log.timestamp.desc()).offset(skip).limit(limit).all()
-    return [
-        {
-            "log_id": log.log_id,
-            "user_id": log.user_id,
-            "action": log.action,
-            "details": log.details,
-            "timestamp": log.timestamp
-        }
-        for log in logs
-    ]
+@router.get("/logs", response_model=List[LogResponse])
+def get_logs(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_current_admin)
+):
+    logs = (
+        db.query(Log)
+        .order_by(Log.timestamp.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    return logs
