@@ -15,7 +15,7 @@ function Login() {
     setError(""); // reset error
 
     try {
-      const response = await api.post("/login", { email, password });
+      const response = await api.post("/auth/login", { email, password });
       const { access_token } = response.data;
 
       // Store token (you can also store user type if needed)
@@ -23,7 +23,7 @@ function Login() {
       localStorage.setItem("userType", userType);
 
       // Redirect to dashboard or home
-      navigate("/dashboard"); // make sure this route exists
+      navigate("/detect"); // make sure this route exists
     } catch (err) {
       const msg = err.response?.data?.detail || "Login failed";
       setError(msg);

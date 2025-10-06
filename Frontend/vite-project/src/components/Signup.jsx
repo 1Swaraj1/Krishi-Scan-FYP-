@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios"; // Adjust path based on your file structure
 
 function Signup() {
-  const [userType, setUserType] = useState("farmer");
+  const [userType, setUserType] = useState("user");
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -39,7 +39,7 @@ function Signup() {
         password: form.password,
       };
 
-      const res = await api.post("/signup", payload);
+      const res = await api.post("/auth/signup", payload);
 
       setSuccess(res.data.message || "Account created successfully");
       localStorage.setItem("userType", userType);
