@@ -3,8 +3,13 @@ uvicorn
 sqlalchemy
 mysql-connector-python
 pydantic
+pydantic-settings
+python-multipart
 passlib[bcrypt]
 tensorflow
 pillow
 numpy
-jwt
+python-jose[cryptography]
+python-dotenv
+aiofiles
+requests
