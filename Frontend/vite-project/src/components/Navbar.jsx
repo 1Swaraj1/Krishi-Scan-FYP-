@@ -4,14 +4,9 @@ import { Link } from "react-router-dom";
 function Navbar() {
   return (
     <nav className="bg-green-700 text-white px-6 py-4 shadow flex justify-between items-center">
-      <h1 className="text-2xl font-bold tracking-tight">🌿 CropGuard</h1>
+      <h1 className="text-2xl font-bold tracking-tight">🌿 Krishi Scan</h1>
 
       <ul className="flex space-x-6 items-center text-sm font-medium">
-        <li>
-          <Link to="/dashboard" className="hover:text-green-200 transition">
-            Dashboard
-          </Link>
-        </li>
         <li>
           <Link to="/profile" className="hover:text-green-200 transition">
             Profile
