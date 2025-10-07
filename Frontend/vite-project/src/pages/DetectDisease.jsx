@@ -1,49 +1,62 @@
+// src/pages/DetectDisease.jsx
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
+import { detectDisease } from "../api/detect";
 
 function DetectDisease() {
   const [image, setImage] = useState(null);
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Handle file selection
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
-    setResult(null); // reset result if new image uploaded
+    setResult(null); // Reset previous result
   };
 
+  // Clear image and result
+  const handleClear = () => {
+    setImage(null);
+    setResult(null);
+  };
+
+  // Submit image to backend
   const handleSubmit = async () => {
     if (!image) return;
 
     setIsLoading(true);
     setResult(null);
 
-    // Simulate AI processing delay
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const data = await detectDisease(image);
       setResult({
-        disease: "Leaf Blight",
-        confidence: 92,
-        solution: "Use copper-based fungicides and avoid overhead watering.",
+        disease: data.predicted_label,
+        confidence: Math.round(data.confidence_score * 100),
+        solution: data.disease_treatment,
+        description: data.disease_description,
       });
-    }, 2000);
-  };
-
-  const handleClear = () => {
-    setImage(null);
-    setResult(null);
+    } catch (err) {
+      setResult({ error: err.detail || "Prediction failed. Try again." });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="max-w-5xl mx-auto py-12 px-6">
-        <h1 className="text-3xl font-bold mb-8 text-green-700 text-center">🌿 Crop Disease Detection</h1>
+        <h1 className="text-3xl font-bold mb-8 text-green-700 text-center">
+          🌿 Crop Disease Detection
+        </h1>
 
         <div className="bg-white p-6 rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Upload Section */}
           <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">Upload a crop leaf photo:</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Upload a crop leaf photo:
+            </label>
             <input
               type="file"
               accept="image/*"
@@ -81,12 +94,27 @@ function DetectDisease() {
           {/* Result Section */}
           <div className="space-y-4">
             {result ? (
-              <div className="bg-green-50 border border-green-300 p-4 rounded-lg shadow-sm">
-                <h2 className="text-xl font-semibold text-green-800 mb-2">🧪 Detection Result</h2>
-                <p><span className="font-medium">Disease:</span> {result.disease}</p>
-                <p><span className="font-medium">Confidence:</span> {result.confidence}%</p>
-                <p><span className="font-medium">Suggested Solution:</span> {result.solution}</p>
-              </div>
+              result.error ? (
+                <div className="text-red-600 font-semibold">{result.error}</div>
+              ) : (
+                <div className="bg-green-50 border border-green-300 p-4 rounded-lg shadow-sm">
+                  <h2 className="text-xl font-semibold text-green-800 mb-2">
+                    🧪 Detection Result
+                  </h2>
+                  <p>
+                    <span className="font-medium">Disease:</span> {result.disease}
+                  </p>
+                  <p>
+                    <span className="font-medium">Confidence:</span> {result.confidence}%
+                  </p>
+                  <p>
+                    <span className="font-medium">Description:</span> {result.description}
+                  </p>
+                  <p>
+                    <span className="font-medium">Suggested Treatment:</span> {result.solution}
+                  </p>
+                </div>
+              )
             ) : isLoading ? (
               <div className="text-gray-500 italic">Running detection...</div>
             ) : (

@@ -77,7 +77,6 @@ function Signup() {
             <p className="text-sm text-gray-500">Let’s get you started with Krishi Scan</p>
           </div>
 
-          <ToggleUserType userType={userType} setUserType={setUserType} />
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="flex gap-4">
