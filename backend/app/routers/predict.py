@@ -12,6 +12,7 @@ from datetime import datetime
 # ---------------- Router ----------------
 router = APIRouter(prefix="/predict", tags=["Prediction"])
 
+
 # ---------------- Model Path ----------------
 # Go back two levels from app/routers/ to reach project root where model is stored
 MODEL_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../plant_disease_cnn_model.keras"))
@@ -46,22 +47,42 @@ def log_action(db, user_id, action, details=None):
     db.commit()
 
 # ---------------- JWT Auth Dependency ----------------
-def get_current_user(authorization: str = Header(...), db: Session = Depends(get_db)):
-    """
-    Decode JWT and return the current user.
-    """
+# def get_current_user(authorization: str | None = Header(default=None), db: Session = Depends(get_db)):
+#     """
+#     Decode JWT and return the current user.
+#     """
+#     try:
+#         token = authorization.split(" ")[1]  # Expecting "Bearer <token>"
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         user_id = payload.get("user_id")
+#         if not user_id:
+#             raise HTTPException(status_code=401, detail="Invalid token")
+#         user = db.query(User).filter(User.user_id == user_id).first()
+#         if not user:
+#             raise HTTPException(status_code=401, detail="User not found")
+#         return user
+#     except (JWTError, IndexError):
+#         raise HTTPException(status_code=401, detail="Invalid token")
+    
+def get_current_user(authorization: str | None = Header(default=None), db: Session = Depends(get_db)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+
+    token = authorization.split(" ")[1]
     try:
-        token = authorization.split(" ")[1]  # Expecting "Bearer <token>"
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
         if not user_id:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+
         user = db.query(User).filter(User.user_id == user_id).first()
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
+
         return user
-    except (JWTError, IndexError):
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail=f"Token decode error: {str(e)}")
+
 
 # ---------------- Prediction API ----------------
 @router.post("/", summary="Predict plant disease from uploaded image")
@@ -89,7 +110,7 @@ async def predict(
 
     # Preprocess image
     try:
-        img = tf.keras.preprocessing.image.load_img(file_path, target_size=(256,256))
+        img = tf.keras.preprocessing.image.load_img(file_path, target_size=(224,224))
         img_array = tf.keras.preprocessing.image.img_to_array(img)
         img_array = np.expand_dims(img_array, axis=0) / 255.0
     except Exception as e:
@@ -101,14 +122,66 @@ async def predict(
     confidence_score = float(np.max(predictions[0]))
 
     # Replace with your actual labels
-    class_labels = ["Early Blight", "Late Blight", "Healthy"]
+    class_labels = [
+    'Apple___Apple_scab',
+    'Apple___Black_rot',
+    'Apple___Cedar_apple_rust',
+    'Apple___healthy',
+    'Blueberry___healthy',
+    'Cherry_(including_sour)___Powdery_mildew',
+    'Cherry_(including_sour)___healthy',
+    'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot',
+    'Corn_(maize)___Common_rust_',
+    'Corn_(maize)___Northern_Leaf_Blight',
+    'Corn_(maize)___healthy',
+    'Grape___Black_rot',
+    'Grape___Esca_(Black_Measles)',
+    'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)',
+    'Grape___healthy',
+    'Orange___Haunglongbing_(Citrus_greening)',
+    'Peach___Bacterial_spot',
+    'Peach___healthy',
+    'Pepper,_bell___Bacterial_spot',
+    'Pepper,_bell___healthy',
+    'Potato___Early_blight',
+    'Potato___Late_blight',
+    'Potato___healthy',
+    'Raspberry___healthy',
+    'Soybean___healthy',
+    'Squash___Powdery_mildew',
+    'Strawberry___Leaf_scorch',
+    'Strawberry___healthy',
+    'Tomato___Bacterial_spot',
+    'Tomato___Early_blight',
+    'Tomato___Late_blight',
+    'Tomato___Leaf_Mold',
+    'Tomato___Septoria_leaf_spot',
+    'Tomato___Spider_mites Two-spotted_spider_mite',
+    'Tomato___Target_Spot',
+    'Tomato___Tomato_Yellow_Leaf_Curl_Virus',
+    'Tomato___Tomato_mosaic_virus',
+    'Tomato___healthy'
+]
     predicted_label = class_labels[predicted_index]
 
-    # Get disease details from DB
-    disease = db.query(Disease).filter(Disease.disease_name == predicted_label).first()
+# Extract crop type from predicted label
+# Example: predicted_label = "Apple___Apple_scab"
+    if "___" in predicted_label:
+        crop_type, disease_name = predicted_label.split("___", 1)
+    else:
+        crop_type = "Unknown"
+        disease_name = predicted_label
+
+# Get disease details from DB
+    disease = (
+        db.query(Disease)
+        .filter(Disease.disease_name == disease_name, Disease.crop_type == crop_type)
+        .first()
+    )
+
     disease_id = disease.disease_id if disease else None
 
-    # Save prediction in DB
+        # Save prediction in DB
     new_pred = Prediction(
         user_id=user_id,
         disease_id=disease_id,
