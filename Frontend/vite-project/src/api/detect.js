@@ -8,7 +8,7 @@ export const detectDisease = async (imageFile) => {
   formData.append("file", imageFile);
 
   try {
-    const response = await api.post("/predict/", formData, {
+    const response = await api.post("/predict/predict/", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${token}`,
