@@ -1,34 +1,55 @@
-import React from "react";
-import Navbar from "../components/Navbar";
+import { useState } from "react";
+import Sidebar from "../components/Sidebar";
 
-function Dashboard() {
+const Dashboard = () => {
+  const [selected, setSelected] = useState("Detect");
+
+  const handleLogout = () => {
+    // Example: clear storage and redirect
+    localStorage.clear();
+    window.location.href = "/login";
+  };
+
   return (
-    <div className="h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-1 bg-gray-50 p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Welcome to CropGuard 🌾</h2>
-        <p className="text-gray-600">
-          Here you can manage your crops, track diseases, and access AI-powered insights.
-        </p>
+    <div className="flex bg-[#f8f9fa] min-h-screen text-gray-800">
+      <Sidebar onSelect={setSelected} onLogout={handleLogout} />
 
-        {/* Placeholder for cards, data, charts etc. */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white p-4 rounded shadow">
-            <h3 className="text-lg font-semibold">Crop Health</h3>
-            <p className="text-sm text-gray-500">AI scan results summary</p>
+      <div className="flex-1 p-8">
+        {selected === "Detect" && (
+          <div>
+            <h2 className="text-2xl font-semibold text-green-700 mb-4">
+              🌿 Detect Section
+            </h2>
+            <p className="text-gray-600">
+              This section can display crop disease detection or scanning results.
+            </p>
           </div>
-          <div className="bg-white p-4 rounded shadow">
-            <h3 className="text-lg font-semibold">Recent Alerts</h3>
-            <p className="text-sm text-gray-500">No critical alerts currently</p>
+        )}
+
+        {selected === "Check Logs" && (
+          <div>
+            <h2 className="text-2xl font-semibold text-green-700 mb-4">
+              🧾 Check Logs
+            </h2>
+            <p className="text-gray-600">
+              Here you can review all detection logs and system activities.
+            </p>
           </div>
-          <div className="bg-white p-4 rounded shadow">
-            <h3 className="text-lg font-semibold">Farm Activity</h3>
-            <p className="text-sm text-gray-500">Last login: Today at 10:12 AM</p>
+        )}
+
+        {selected === "Administration" && (
+          <div>
+            <h2 className="text-2xl font-semibold text-green-700 mb-4">
+              ⚙️ Administration
+            </h2>
+            <p className="text-gray-600">
+              Manage system settings, users, and access control here.
+            </p>
           </div>
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default Dashboard;

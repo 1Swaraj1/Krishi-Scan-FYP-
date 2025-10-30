@@ -8,16 +8,6 @@ function Navbar() {
 
       <ul className="flex space-x-6 items-center text-sm font-medium">
         <li>
-          <Link to="/profile" className="hover:text-green-200 transition">
-            Profile
-          </Link>
-        </li>
-        <li>
-          <Link to="/settings" className="hover:text-green-200 transition">
-            Settings
-          </Link>
-        </li>
-        <li>
           <button
             className="ml-4 bg-white text-green-700 px-3 py-1 rounded hover:bg-green-100 transition"
             onClick={async () => {

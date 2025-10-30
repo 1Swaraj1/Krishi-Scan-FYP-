@@ -22,8 +22,15 @@ function Login() {
       localStorage.setItem("token", access_token);
       localStorage.setItem("userType", userType);
 
-      // Redirect to dashboard or home
-      navigate("/detect"); // make sure this route exists
+      // Conditional redirection based on user type
+    if (userType === "admin") {
+      navigate("/dashboard");
+    } else if (userType === "farmer") {
+      navigate("/detect");
+    } else {
+      navigate("/"); // fallback route
+    }
+
     } catch (err) {
       const msg = err.response?.data?.detail || "Login failed";
       setError(msg);
@@ -39,7 +46,7 @@ function Login() {
       >
         <div className="bg-black/50 backdrop-blur-md p-6 rounded-lg max-w-md">
           <h1 className="text-4xl font-bold mb-2 tracking-tight text-green-300">
-            🌱 Krishi Scan
+            Krishi Scan
           </h1>
           <p className="text-lg font-semibold text-white mb-2">Join the Future of Farming</p>
           <p className="text-sm leading-relaxed text-gray-200">
@@ -54,7 +61,7 @@ function Login() {
       <div className="w-1/2 flex items-center justify-center bg-white px-8">
         <div className="max-w-md w-full space-y-6">
           <div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome back 👋</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome back</h2>
             <p className="text-sm text-gray-500">
               Sign in to your account and continue protecting your crops
             </p>
