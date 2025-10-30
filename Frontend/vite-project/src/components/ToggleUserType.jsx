@@ -15,9 +15,9 @@ function ToggleUserType({ userType, setUserType }) {
         className={`flex-1 py-2 rounded ${
           userType === "user" ? "bg-green-700 text-white" : "bg-white border"
         }`}
-        onClick={() => setUserType("user")}
+        onClick={() => setUserType("admin")}
       >
-        U <br /> User
+        A <br /> Admin
       </button>
     </div>
   );

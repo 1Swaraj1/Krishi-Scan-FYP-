@@ -5,6 +5,8 @@ from app.models.models import User, Log
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from datetime import datetime, timedelta
+from fastapi.responses import JSONResponse
+from fastapi import Header
 import jwt  # PyJWT
 
 router = APIRouter()
@@ -66,3 +68,32 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
     log_action(db, user.user_id, "User logged in")
     return {"access_token": token, "token_type": "bearer"}
+
+@router.post("/logout")
+def logout(
+    authorization: str | None = Header(default=None),
+    db: Session = Depends(get_db)
+):
+    """
+    Logs the user out by removing their token client-side.
+    JWT is stateless, so backend just logs the event.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid token")
+
+    try:
+        token = authorization.split(" ")[1]
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user_id = decoded.get("user_id")
+
+        # Log the logout action
+        log_action(db, user_id, "User logged out")
+
+        # Send success response
+        response = JSONResponse(content={"message": "Logout successful"})
+        return response
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")

@@ -32,7 +32,7 @@ function DetectDisease() {
       const data = await detectDisease(image);
       setResult({
         disease: data.predicted_label,
-        confidence: Math.round(data.confidence_score * 100),
+        confidence: Math.round(data.confidence_score),
         solution: data.disease_treatment,
         description: data.disease_description,
       });

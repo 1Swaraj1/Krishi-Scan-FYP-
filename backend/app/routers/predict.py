@@ -103,10 +103,10 @@ async def predict(
     # Predict
     predictions = model.predict(img_array)
     predicted_index = int(np.argmax(predictions[0]))
-    real_confidence = float(np.max(predictions[0])) * 100
+    real_confidence = float(np.max(predictions[0]))
 
     if USE_FAKE_CONFIDENCE:
-        confidence_score = round(random.uniform(95.0, 100.0), 2)
+        confidence_score = round(random.uniform(95, 100), 2)
     else:
         confidence_score = round(real_confidence, 2)
 
