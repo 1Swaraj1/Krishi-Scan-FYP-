@@ -71,4 +71,6 @@ def get_logs(
         .limit(limit)
         .all()
     )
+    for log in logs:
+        log.timestamp = log.timestamp.strftime("%Y-%m-%d %H:%M:%S")
     return logs
