@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.database import engine, Base
-from app.routers import auth, predict, admin
+from app.routers import auth, predict, admin, user
 from fastapi.middleware.cors import CORSMiddleware
 # Create DB tables from models
 Base.metadata.create_all(bind=engine)
@@ -19,6 +19,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(predict.router, prefix="/predict", tags=["Prediction"])
 app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+app.include_router(user.router, prefix="/user", tags=["User"])
 
 # app.include_router(auth.router)
 # app.include_router(predict.router)
