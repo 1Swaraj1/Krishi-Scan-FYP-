@@ -74,3 +74,62 @@ def get_logs(
     for log in logs:
         log.timestamp = log.timestamp.strftime("%Y-%m-%d %H:%M:%S")
     return logs
+
+# ---------------- Response Model ----------------
+class UserResponse(BaseModel):
+    user_id: int
+    name: str
+    email: str
+    role: str
+    created_at: str
+
+    class Config:
+        orm_mode = True
+
+# ---------------- Get All Users ----------------
+@router.get("/users", response_model=List[UserResponse])
+def get_all_users(db: Session = Depends(get_db), admin: User = Depends(get_current_admin)):
+    users = db.query(User).all()
+    # Convert datetime to string for validation
+    for user in users:
+        if hasattr(user, "created_at") and user.created_at:
+            user.created_at = user.created_at.strftime("%Y-%m-%d %H:%M:%S")
+    return users
+
+# ---------------- Delete User ----------------
+@router.delete("/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin)):
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.user_id == admin.user_id:
+        raise HTTPException(status_code=400, detail="Admin cannot delete themselves")
+
+    db.delete(user)
+    db.commit()
+    return {"message": f"User {user.name} deleted successfully"}
+
+# ---------------- Promote User ----------------
+@router.put("/users/{user_id}/promote")
+def promote_user(user_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin)):
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.role = "admin"
+    db.commit()
+    return {"message": f"{user.name} promoted to admin"}
+
+# ---------------- Demote User ----------------
+@router.put("/users/{user_id}/demote")
+def demote_user(user_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin)):
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.user_id == admin.user_id:
+        raise HTTPException(status_code=400, detail="Admin cannot demote themselves")
+
+    user.role = "user"
+    db.commit()
+    return {"message": f"{user.name} demoted to user"}
