@@ -22,6 +22,7 @@ class SignupRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+    role: str
 
 # ----------------- DB Dependency -----------------
 def get_db():
@@ -59,15 +60,22 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == request.email).first()
     if not user or not pwd_context.verify(request.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
-
+    
+    # ✅ Check role match
+    if user.role != request.role:
+        raise HTTPException(
+            status_code=403,
+            detail=f"You are not authorized to log in as {request.role}",
+        )
     payload = {
         "user_id": user.user_id,
+        "role": user.role,
         "exp": datetime.utcnow() + timedelta(hours=24)
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
     log_action(db, user.user_id, "User logged in")
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "role": user.role}
 
 @router.post("/logout")
 def logout(

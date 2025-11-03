@@ -216,7 +216,7 @@ function DetectDisease() {
         {/* History Section */}
         <div className="mt-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-green-700">🧾 Your Detection History</h2>
+            <h2 className="text-2xl font-bold text-green-700">Your Detection History</h2>
             <div className="text-sm text-gray-600">Showing last {history.length} detections</div>
           </div>
 

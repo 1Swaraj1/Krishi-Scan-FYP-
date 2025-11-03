@@ -5,11 +5,11 @@ function ToggleUserType({ userType, setUserType }) {
     <div className="flex space-x-2 mb-4">
       <button
         className={`flex-1 py-2 rounded ${
-          userType === "farmer" ? "bg-green-700 text-white" : "bg-white border"
+          userType === "user" ? "bg-green-700 text-white" : "bg-white border"
         }`}
-        onClick={() => setUserType("farmer")}
+        onClick={() => setUserType("user")}
       >
-        F <br /> Farmer
+        U <br /> User
       </button>
       <button
         className={`flex-1 py-2 rounded ${

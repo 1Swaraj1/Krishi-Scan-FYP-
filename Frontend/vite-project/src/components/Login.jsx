@@ -4,38 +4,66 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios"; // Make sure this path is correct
 
 function Login() {
-  const [userType, setUserType] = useState("farmer");
+  const [userType, setUserType] = useState("user");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // prevent default form reload
-    setError(""); // reset error
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault(); // prevent default form reload
+  //   setError(""); // reset error
 
-    try {
-      const response = await api.post("/auth/login", { email, password });
-      const { access_token } = response.data;
+  //   try {
+  //     const response = await api.post("/auth/login", { email, password });
+  //     const { access_token } = response.data;
 
-      // Store token (you can also store user type if needed)
-      localStorage.setItem("token", access_token);
-      localStorage.setItem("userType", userType);
+  //     // Store token (you can also store user type if needed)
+  //     localStorage.setItem("token", access_token);
+  //     localStorage.setItem("userType", userType);
 
-      // Conditional redirection based on user type
+  //     // Conditional redirection based on user type
+  //   if (userType === "admin") {
+  //     navigate("/dashboard");
+  //   } else if (userType === "farmer") {
+  //     navigate("/detect");
+  //   } else {
+  //     navigate("/"); // fallback route
+  //   }
+
+  //   } catch (err) {
+  //     const msg = err.response?.data?.detail || "Login failed";
+  //     setError(msg);
+  //   }
+  // };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError("");
+
+  try {
+    const response = await api.post("/auth/login", {
+      email,
+      password,
+      role: userType,  // 👈 Send this to backend
+    });
+
+    const { access_token, role } = response.data;
+    localStorage.setItem("token", access_token);
+    localStorage.setItem("role", role);
+
+    // Redirect based on backend-confirmed role
     if (userType === "admin") {
       navigate("/dashboard");
-    } else if (userType === "farmer") {
+    } else if (userType === "user") {
       navigate("/detect");
     } else {
       navigate("/"); // fallback route
     }
-
-    } catch (err) {
-      const msg = err.response?.data?.detail || "Login failed";
-      setError(msg);
-    }
-  };
+  } catch (err) {
+    const msg = err.response?.data?.detail || "Login failed";
+    setError(msg);
+  }
+};
 
   return (
     <div className="flex h-screen font-sans">
