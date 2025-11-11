@@ -91,7 +91,9 @@ async def predict(
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-
+    
+    # ✅ Store only the relative path for frontend access
+    db_image_path = f"uploads/{filename}"
     # Preprocess image
     try:
         img = tf.keras.preprocessing.image.load_img(file_path, target_size=(224, 224))
@@ -173,7 +175,7 @@ async def predict(
     new_pred = Prediction(
         user_id=user_id,
         disease_id=disease_id,
-        image_path=file_path,
+        image_path=db_image_path,
         predicted_label=predicted_label,
         confidence_score=real_confidence  # Save true model confidence
     )
