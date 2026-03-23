@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 # Replace with your MySQL credentials
-DATABASE_URL = "mysql+mysqlconnector://root:swaraj@localhost/krishiscan"
+DATABASE_URL = "mysql+mysqlconnector://root:Indian%401@localhost/krishiscan"
 
 engine = create_engine(DATABASE_URL)
 with engine.connect() as conn:

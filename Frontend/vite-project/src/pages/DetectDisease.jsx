@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { detectDisease } from "../api/detect";
 import api from "../api/axios";
+import { useLanguage } from "../context/LanguageContext";
+import { translations } from "../translations";
 
 function DetectDisease() {
   const [image, setImage] = useState(null);
@@ -10,7 +12,8 @@ function DetectDisease() {
   const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState([]);
   const [error, setError] = useState(null);
-
+  const { lang } = useLanguage();
+  const t = translations[lang];
   // Attempt to get userId from JWT stored in localStorage token
   const getUserIdFromToken = () => {
     try {
@@ -50,7 +53,7 @@ function DetectDisease() {
   const fetchHistory = async () => {
     setError(null);
     if (!userId) {
-      setError("User not identified. Please login.");
+      setError(t.userNotFound);
       return;
     }
     try {
@@ -61,7 +64,7 @@ function DetectDisease() {
       setHistory(res.data || []);
     } catch (err) {
       console.error("Error fetching history:", err);
-      setError(err.response?.data?.detail || "Failed to load history");
+      setError(err.response?.data?.detail || t.errorHistory);
       setHistory([]);
     }
   };
@@ -112,7 +115,7 @@ function DetectDisease() {
       await fetchHistory();
     } catch (err) {
       console.error("Detection failed:", err);
-      setError(err.detail || err.response?.data?.detail || "Prediction failed. Try again.");
+      setError(err.detail || err.response?.data?.detail || t.errorPrediction);
     } finally {
       setIsLoading(false);
     }
@@ -123,13 +126,13 @@ function DetectDisease() {
       <Navbar />
       <div className="max-w-6xl mx-auto py-10 px-6">
         <h1 className="text-3xl font-bold mb-8 text-green-700 text-center">
-          <span role="img" aria-label="leaf">🌿</span> Crop Disease Detection
+          <span role="img" aria-label="leaf"></span> {t.detect}
         </h1>
 
         <div className="bg-white p-6 rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Upload / Controls */}
           <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">Upload a crop leaf photo:</label>
+            <label className="block text-sm font-medium text-gray-700">{t.upload}</label>
 
             <div className="flex items-center gap-3">
               <input
@@ -160,14 +163,14 @@ function DetectDisease() {
                   !image || isLoading ? "opacity-60 cursor-not-allowed" : ""
                 }`}
               >
-                {isLoading ? "Analyzing..." : "Detect Disease"}
+              {isLoading ? t.analyzing : t.detect}
               </button>
 
               <button
                 onClick={handleClear}
                 className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded transition"
               >
-                Clear
+                {t.clear}
               </button>
             </div>
 
@@ -178,15 +181,15 @@ function DetectDisease() {
           <div className="space-y-4">
             {result ? (
               <div className="bg-green-50 border border-green-300 p-5 rounded-lg shadow-sm">
-                <h2 className="text-xl font-semibold text-green-800 mb-3">Detection Result</h2>
+                <h2 className="text-xl font-semibold text-green-800 mb-3">{t.result}</h2>
 
                 <div className="mb-2">
-                  <div className="text-sm text-gray-600">Disease</div>
+                  <div className="text-sm text-gray-600">{t.disease}</div>
                   <div className="font-medium text-lg">{result.disease}</div>
                 </div>
 
                 <div className="mb-3">
-                  <div className="text-sm text-gray-600">Confidence</div>
+                  <div className="text-sm text-gray-600">{t.confidence}</div>
                   <div className="flex items-center gap-3">
                     <div className="flex-1 bg-white rounded-full h-3 overflow-hidden border">
                       <div
@@ -199,16 +202,16 @@ function DetectDisease() {
                 </div>
 
                 {result.description && (
-                  <p className="text-gray-700"><strong>Description:</strong> {result.description}</p>
+                  <p className="text-gray-700"><strong>{t.description}</strong> {result.description}</p>
                 )}
                 {result.solution && (
-                  <p className="text-gray-700 mt-2"><strong>Suggested Treatment:</strong> {result.solution}</p>
+                  <p className="text-gray-700 mt-2"><strong>{t.treatment}</strong> {result.solution}</p>
                 )}
               </div>
             ) : isLoading ? (
               <div className="text-gray-500 italic">Running detection...</div>
             ) : (
-              <div className="text-gray-400 italic">Result will appear here.</div>
+              <div className="text-gray-400 italic">{t.resultPlaceholder}</div>
             )}
           </div>
         </div>
@@ -216,12 +219,12 @@ function DetectDisease() {
         {/* History Section */}
         <div className="mt-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-green-700">Your Detection History</h2>
-            <div className="text-sm text-gray-600">Showing last {history.length} detections</div>
+            <h2 className="text-2xl font-bold text-green-700">{t.history}</h2>
+            <div className="text-sm text-gray-600">{t.showing} {history.length} {t.detections}</div>
           </div>
 
           {history.length === 0 ? (
-            <div className="bg-white p-6 rounded-lg shadow text-center text-gray-500">No past detections found.</div>
+            <div className="bg-white p-6 rounded-lg shadow text-center text-gray-500">{t.noHistory}</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {history.map((item) => {
@@ -248,8 +251,8 @@ function DetectDisease() {
                     </div>
 
                     <h3 className="font-semibold text-green-800">{label}</h3>
-                    <p className="text-sm text-gray-600 mt-1">Confidence: <span className="font-medium">{confidence}%</span></p>
-                    <p className="text-sm text-gray-500 mt-1">Date: {dateStr}</p>
+                    <p className="text-sm text-gray-600 mt-1">{t.confidence} <span className="font-medium">{confidence}%</span></p>
+                    <p className="text-sm text-gray-500 mt-1">{t.date} {dateStr}</p>
 
                     <div className="mt-3 flex gap-2">
                       <button
@@ -259,7 +262,7 @@ function DetectDisease() {
                         }}
                         className="text-sm px-3 py-1 border rounded text-green-700 hover:bg-green-50"
                       >
-                        View Image
+                        {t.viewImage}
                       </button>
 
                       <button
@@ -300,7 +303,7 @@ function DetectDisease() {
                         }}
                         className="text-sm px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
                       >
-                        Re-detect
+                        {t.reDetect}
                       </button>
                     </div>
                   </div>
