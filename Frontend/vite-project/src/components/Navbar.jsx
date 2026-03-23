@@ -18,14 +18,17 @@ return (
       <div className="flex items-center gap-4">
 
         {/* 🌐 LANGUAGE SELECT */}
+        🌐
         <select
           value={lang}
           onChange={(e) => setLang(e.target.value)}
           className="text-black px-2 py-1 rounded"
         >
-          <option value="en">EN</option>
-          <option value="hi">HI</option>
-          <option value="bn">BN</option>
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="mr">मराठी</option>
+          <option value="pa">ਪੰਜਾਬੀ</option>
         </select>
 
         {/* LOGOUT BUTTON */}

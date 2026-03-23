@@ -14,6 +14,16 @@ function DetectDisease() {
   const [error, setError] = useState(null);
   const { lang } = useLanguage();
   const t = translations[lang];
+  const formatDiseaseName = (name) => {
+    if (!name) return "";
+
+    return name
+      .replace(/_/g, " ")
+      .replace(/,/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
   // Attempt to get userId from JWT stored in localStorage token
   const getUserIdFromToken = () => {
     try {
@@ -185,7 +195,7 @@ function DetectDisease() {
 
                 <div className="mb-2">
                   <div className="text-sm text-gray-600">{t.disease}</div>
-                  <div className="font-medium text-lg">{result.disease}</div>
+                  <div className="font-medium text-lg">{formatDiseaseName(result.disease)}</div>
                 </div>
 
                 <div className="mb-3">

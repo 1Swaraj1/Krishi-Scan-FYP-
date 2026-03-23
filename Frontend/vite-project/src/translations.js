@@ -81,5 +81,83 @@ export const translations = {
     userNotFound: "ব্যবহারকারী পাওয়া যায়নি",
     showing: "শেষ",
     detections: "টি রেকর্ড",
+  },
+  mr: {
+    logout: "लॉगआउट",
+
+    detect: "रोग ओळखा",
+    upload: "प्रतिमा अपलोड करा",
+    result: "परिणाम",
+    disease: "रोग",
+    confidence: "विश्वास पातळी",
+    treatment: "उपचार",
+    description: "वर्णन",
+    analyzing: "विश्लेषण सुरू आहे...",
+    resultPlaceholder: "परिणाम येथे दिसेल",
+    clear: "साफ करा",
+    showing: "शेवटचे",
+    detections: "नोंदी",
+
+    history: "आपला इतिहास",
+    noHistory: "कोणतीही नोंद नाही",
+    date: "तारीख",
+    viewImage: "प्रतिमा पहा",
+    reDetect: "पुन्हा तपासा",
+
+    errorPrediction: "भविष्यवाणी अयशस्वी",
+    errorHistory: "इतिहास लोड झाला नाही",
+    userNotFound: "वापरकर्ता सापडला नाही"
+  },
+  mr: {
+    logout: "लॉगआउट",
+
+    detect: "रोग ओळखा",
+    upload: "प्रतिमा अपलोड करा",
+    result: "परिणाम",
+    disease: "रोग",
+    confidence: "विश्वास पातळी",
+    treatment: "उपचार",
+    description: "वर्णन",
+    analyzing: "विश्लेषण सुरू आहे...",
+    resultPlaceholder: "परिणाम येथे दिसेल",
+    clear: "साफ करा",
+    showing: "शेवटचे",
+    detections: "नोंदी",
+
+    history: "आपला इतिहास",
+    noHistory: "कोणतीही नोंद नाही",
+    date: "तारीख",
+    viewImage: "प्रतिमा पहा",
+    reDetect: "पुन्हा तपासा",
+
+    errorPrediction: "भविष्यवाणी अयशस्वी",
+    errorHistory: "इतिहास लोड झाला नाही",
+    userNotFound: "वापरकर्ता सापडला नाही"
+  },
+  pa: {
+    logout: "ਲਾਗਆਉਟ",
+
+    detect: "ਬਿਮਾਰੀ ਪਛਾਣੋ",
+    upload: "ਤਸਵੀਰ ਅੱਪਲੋਡ ਕਰੋ",
+    result: "ਨਤੀਜਾ",
+    disease: "ਬਿਮਾਰੀ",
+    confidence: "ਭਰੋਸਾ ਪੱਧਰ",
+    treatment: "ਇਲਾਜ",
+    description: "ਵੇਰਵਾ",
+    analyzing: "ਵਿਸ਼ਲੇਸ਼ਣ ਚੱਲ ਰਿਹਾ ਹੈ...",
+    resultPlaceholder: "ਨਤੀਜਾ ਇੱਥੇ ਦਿਖੇਗਾ",
+    clear: "ਸਾਫ ਕਰੋ",
+    showing: "ਆਖਰੀ",
+    detections: "ਰਿਕਾਰਡ",
+
+    history: "ਤੁਹਾਡਾ ਇਤਿਹਾਸ",
+    noHistory: "ਕੋਈ ਰਿਕਾਰਡ ਨਹੀਂ ਮਿਲਿਆ",
+    date: "ਤਾਰੀਖ",
+    viewImage: "ਤਸਵੀਰ ਵੇਖੋ",
+    reDetect: "ਮੁੜ ਜਾਂਚੋ",
+
+    errorPrediction: "ਭਵਿੱਖਬਾਣੀ ਅਸਫਲ ਰਹੀ",
+    errorHistory: "ਇਤਿਹਾਸ ਲੋਡ ਨਹੀਂ ਹੋਇਆ",
+    userNotFound: "ਯੂਜ਼ਰ ਨਹੀਂ ਮਿਲਿਆ"
   }
 };
