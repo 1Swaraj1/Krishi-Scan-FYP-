@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Activity, FileText, Settings, LogOut } from "lucide-react";
+import { Activity, FileText, Settings, LogOut, Leaf } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Sidebar = ({ onSelect, onLogout }) => {
@@ -16,11 +16,16 @@ const Sidebar = ({ onSelect, onLogout }) => {
       initial={{ x: -80, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="h-screen w-64 bg-white text-gray-800 flex flex-col p-4 shadow-md border-r border-gray-200"
+      className="h-screen w-64 bg-white text-gray-800 flex flex-col p-4 shadow-sm border-r border-gray-100 z-20"
     >
-      <h1 className="text-2xl font-bold mb-6 text-green-600 tracking-wide">
-        Krishi-Scan
-      </h1>
+      <div className="flex items-center gap-2 mb-8 mt-2 px-2">
+        <div className="p-2 bg-green-100 text-green-700 rounded-lg">
+          <Leaf size={24} />
+        </div>
+        <h1 className="text-xl font-extrabold text-green-800 tracking-tight">
+          Krishi Scan
+        </h1>
+      </div>
 
       <ul className="space-y-2 flex-1">
         {menuItems.map((item) => (

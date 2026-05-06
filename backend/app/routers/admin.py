@@ -16,7 +16,7 @@ ALGORITHM = "HS256"
 # ---------------- Pydantic Response Model ----------------
 class LogResponse(BaseModel):
     log_id: int
-    user_id: int
+    user_id: Optional[int]
     action: str
     details: Optional[str] = None
     timestamp: str
